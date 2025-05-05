@@ -151,7 +151,7 @@ void A_timerinterrupt(void)
   tolayer3(A, buffer[windowfirst]);
   packets_resent++;
 
-  if(windowcount = 1)
+  if(windowcount > 1)
     starttimer(A, RTT);
 }
 
@@ -177,6 +177,10 @@ void A_init(void)
 
 static int expectedseqnum; /* the sequence number expected next by the receiver */
 static int B_nextseqnum;   /* the sequence number for the next packets sent by B */
+static struct pkt recv_pkt[SEQSPACE];
+static bool received[SEQSPACE];
+
+
 
 
 /* called from layer 3, when a packet arrives for layer 4 at B*/
@@ -186,11 +190,24 @@ void B_input(struct pkt packet)
   int i;
 
   /* if not corrupted and received packet is in order */
-  if  ( (!IsCorrupted(packet))  && (packet.seqnum == expectedseqnum) ) {
+  if  ( (!IsCorrupted(packet)) ) 
+  {
     if (TRACE > 0)
       printf("----B: packet %d is correctly received, send ACK!\n",packet.seqnum);
     packets_received++;
 
+    if (received[packet.seqnum] == false)
+    {
+      received[packet.seqnum] == true;
+      for (i = 0; i < 20; i++)
+        recv_pkt[packet.seqnum].payload[i] = packet.payload[i];
+    }
+
+    while (received[expectedseqnum] == true){
+      tolayer5(B, packet.payload);
+      received[expectedseqnum] = false;
+      expectedseqnum = (expectedseqnum + 1) % SEQSPACE;
+    }
     /* deliver to receiving application */
     tolayer5(B, packet.payload);
 
