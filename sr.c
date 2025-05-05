@@ -112,7 +112,7 @@ void A_input(struct pkt packet)
       new_ACKs++;
       acked[packet.acknum] = true;
       
-        /* code */
+        
       
     }
 
@@ -148,15 +148,11 @@ void A_timerinterrupt(void)
   if (TRACE > 0)
     printf("----A: time out,resend packets!\n");
 
-  for(i=0; i<windowcount; i++) {
+  tolayer3(A, buffer[windowfirst]);
+  packets_resent++;
 
-    if (TRACE > 0)
-      printf ("---A: resending packet %d\n", (buffer[(windowfirst+i) % WINDOWSIZE]).seqnum);
-
-    tolayer3(A,buffer[(windowfirst+i) % WINDOWSIZE]);
-    packets_resent++;
-    if (i==0) starttimer(A,RTT);
-  }
+  if(windowcount = 1)
+    starttimer(A, RTT);
 }
 
 
