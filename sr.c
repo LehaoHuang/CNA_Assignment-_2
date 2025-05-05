@@ -110,36 +110,35 @@ void A_input(struct pkt packet)
       if (TRACE>0)
         printf("----A: ACK %d is not a duplicate\n", packet.acknum);
       new_ACKs++;
-      acked[packet.acknum]*true;
+      acked[packet.acknum] = true;
       
         /* code */
       
     }
 
-
-    }
-  
-
+    if (packet.acknum == buffer[windowfirst].seqnum)
     {
-      /* code */
+      while (windowcount > 0 && acked[buffer[windowfirst].seqnum])
+      {
+        windowfirst = (windowfirst + 1) % WINDOWSIZE;
+        windowcount--;
+      }
+      
+      stoptimer(A);
+      if (windowcount > 0)
+        starttimer(A, RTT);
     }
-    
-    /* check if new ACK or duplicate */
-    
-
-	    /* start timer again if there are still more unacked packets in window */
-            stoptimer(A);
-            if (windowcount > 0)
-              starttimer(A, RTT);
-
-          }
-        }
-        else if (TRACE > 0)
-        printf ("----A: duplicate ACK received, do nothing!\n");
   }
   else if (TRACE > 0)
-      printf ("----A: corrupted ACK is received, do nothing!\n");
+    printf ("----A: duplicate ACK received, do nothing!\n");
+
+else if (TRACE > 0)
+    printf ("----A: corrupted ACK is received, do nothing!\n");
 }
+    
+    
+   
+            
 
 /* called when A's timer goes off */
 void A_timerinterrupt(void)
