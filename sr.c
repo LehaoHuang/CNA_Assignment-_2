@@ -213,9 +213,14 @@ void B_input(struct pkt packet)
 
     /* send an ACK for the received packet */
     sendpkt.acknum = expectedseqnum;
+    sendpkt.seqnum = NOTINUSE;
 
-    /* update state variables */
-    expectedseqnum = (expectedseqnum + 1) % SEQSPACE;
+    for (i = 0; i < 20; i++)
+      sendpkt.payload[i] = '0';
+
+    sendpkt.checksum = ComputeChecksum(sendpkt);
+    
+    tolayer3(B, sendpkt);
   }
   else {
     /* packet is corrupted or out of order resend last ACK */
