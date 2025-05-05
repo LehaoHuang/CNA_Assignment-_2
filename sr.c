@@ -97,8 +97,6 @@ void A_output(struct msg message)
 */
 void A_input(struct pkt packet)
 {
-  int ackcount = 0;
-  int i;
 
   /* if received ACK is not corrupted */
   if (!IsCorrupted(packet)) 
@@ -106,7 +104,8 @@ void A_input(struct pkt packet)
     if (TRACE > 0)
       printf("----A: uncorrupted ACK %d is received\n",packet.acknum);
     
-    if(!acked[packet.acknum]){
+    if(!acked[packet.acknum])
+    {
       if (TRACE>0)
         printf("----A: ACK %d is not a duplicate\n", packet.acknum);
       new_ACKs++;
@@ -143,7 +142,7 @@ else if (TRACE > 0)
 /* called when A's timer goes off */
 void A_timerinterrupt(void)
 {
-  int i;
+  
 
   if (TRACE > 0)
     printf("----A: time out,resend packets!\n");
@@ -154,7 +153,7 @@ void A_timerinterrupt(void)
   tolayer3(A, buffer[windowfirst]);
   packets_resent++;
 
-  if(windowcount > 1)
+  if(windowcount > 0)
     starttimer(A, RTT);
 }
 
@@ -211,11 +210,10 @@ void B_input(struct pkt packet)
       received[expectedseqnum] = false;
       expectedseqnum = (expectedseqnum + 1) % SEQSPACE;
     }
-    /* deliver to receiving application */
-    tolayer5(B, packet.payload);
+   
 
     /* send an ACK for the received packet */
-    sendpkt.acknum = expectedseqnum;
+    sendpkt.acknum = packet.seqnum;
     sendpkt.seqnum = NOTINUSE;
 
     for (i = 0; i < 20; i++)
